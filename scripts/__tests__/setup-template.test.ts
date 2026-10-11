@@ -18,6 +18,32 @@ const excludedDirectories = new Set([
 	'showcase',
 	'test-results',
 ])
+const templateOnlyPaths = [
+	'.github/workflows/compatibility-pr.yml',
+	'.github/workflows/release.yml',
+	'.gitmodules',
+	'AUDIT.md',
+	'CHANGELOG.md',
+	'CONTRIBUTING.md',
+	'SECURITY.md',
+	'docs/assets',
+	'docs/_config.yml',
+	'docs/compatibility.md',
+	'docs/index.md',
+	'docs/migrations.md',
+	'docs/project-health.md',
+	'docs/releasing.md',
+	'docs/roadmap.md',
+	'docs/sponsorship.md',
+	'docs/updates',
+	'docs/versions.md',
+	'jst.template.json',
+	'scripts/__tests__',
+	'scripts/prepare-compatibility-release.d.mts',
+	'scripts/prepare-compatibility-release.mjs',
+	'scripts/setup-template.mjs',
+	'showcase',
+]
 
 it('creates a configured clean product', async () => {
 	const { fixtureRoot, temporaryRoot } = await createFixture('clean')
@@ -79,21 +105,12 @@ it('creates a configured clean product', async () => {
 		await expect(access(resolve(fixtureRoot, 'src/widgets/README.md'))).resolves.toBeUndefined()
 		await expect(access(resolve(fixtureRoot, 'skills/frontend-architecture/SKILL.md'))).resolves.toBeUndefined()
 		await expect(access(resolve(fixtureRoot, 'jst.compatibility.json'))).resolves.toBeUndefined()
-		await expect(access(resolve(fixtureRoot, '.gitmodules'))).rejects.toThrow()
-		await expect(access(resolve(fixtureRoot, 'showcase'))).rejects.toThrow()
-		await expect(access(resolve(fixtureRoot, 'CHANGELOG.md'))).rejects.toThrow()
-		await expect(access(resolve(fixtureRoot, 'CONTRIBUTING.md'))).rejects.toThrow()
-		await expect(access(resolve(fixtureRoot, 'SECURITY.md'))).rejects.toThrow()
-		await expect(access(resolve(fixtureRoot, 'docs/assets'))).rejects.toThrow()
-		await expect(access(resolve(fixtureRoot, 'docs/_config.yml'))).rejects.toThrow()
-		await expect(access(resolve(fixtureRoot, 'docs/project-health.md'))).rejects.toThrow()
-		await expect(access(resolve(fixtureRoot, 'docs/updates'))).rejects.toThrow()
-		await expect(access(resolve(fixtureRoot, '.github/workflows/release.yml'))).rejects.toThrow()
-		await expect(access(resolve(fixtureRoot, '.github/workflows/compatibility-pr.yml'))).rejects.toThrow()
-		await expect(access(resolve(fixtureRoot, 'scripts/__tests__'))).rejects.toThrow()
-		await expect(access(resolve(fixtureRoot, 'scripts/prepare-compatibility-release.d.mts'))).rejects.toThrow()
-		await expect(access(resolve(fixtureRoot, 'scripts/prepare-compatibility-release.mjs'))).rejects.toThrow()
-		await expect(access(resolve(fixtureRoot, 'scripts/setup-template.mjs'))).rejects.toThrow()
+		for (const path of templateOnlyPaths) {
+			await expect(
+				access(resolve(fixtureRoot, path)),
+				`Expected template-only path "${path}" to be removed after setup`,
+			).rejects.toThrow()
+		}
 		await runArchitectureCheck(fixtureRoot)
 	}
 	finally {
