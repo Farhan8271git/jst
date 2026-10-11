@@ -33,4 +33,8 @@ JST is a React application foundation whose architecture is enforced in the edit
 - [Sponsoring JST](sponsorship.md)
 - [Maintenance updates](updates/index.md)
 
+## Reference
+
+- [Reference](reference.md)
+
 Rules and configuration are documented with the package that implements them: [@jst-stack/eslint-plugin](https://github.com/jst-stack/eslint-plugin#configuration).
