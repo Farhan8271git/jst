@@ -53,9 +53,6 @@ try {
 		await writeFile(path, source)
 	}
 	await rename(temporary, target)
-	if (['feature', 'module'].includes(kind) && values.public) {
-		await registerPublicApi(root, `src/${layer}/${name}/${name}${policy.imports.publicApiSuffix}.ts`)
-	}
 	if (values.install && (plan.dependencies.length || plan.devDependencies.length)) {
 		await installDependencies(root, plan)
 	}
@@ -280,15 +277,6 @@ async function installDependencies(root, plan) {
 	if (plan.devDependencies.length) {
 		await run(packageManager, [...install, '--save-dev', ...plan.devDependencies], root)
 	}
-}
-
-async function registerPublicApi(root, path) {
-	const manifestPath = resolve(root, 'package.json')
-	const manifest = JSON.parse(await readFile(manifestPath, 'utf8'))
-	const ignore = new Set(manifest.knip?.ignore ?? [])
-	ignore.add(path)
-	manifest.knip = { ...manifest.knip, ignore: [...ignore].sort() }
-	await writeFile(manifestPath, `${JSON.stringify(manifest, null, '\t')}\n`)
 }
 
 async function snapshotProjectFiles(root) {

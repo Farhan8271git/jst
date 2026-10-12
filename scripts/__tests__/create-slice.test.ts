@@ -30,12 +30,13 @@ it('creates complete slices without empty scaffolding', async () => {
 		expect(entry).toContain('useWrap(store.increment)')
 		expect(await readFile(resolve(root, 'src/features/readingList/readingList.store.ts'), 'utf8'))
 			.toContain('class ReadingListStore')
+		expect(await getKnipFailure(root)).toContain('readingList.public.ts')
+		await writeFile(resolve(root, 'src/owner.ts'), 'import { ReadingListEntry } from \'./features/readingList/readingList.public\'\nvoid ReadingListEntry\n')
+		await expect(runKnip(root)).resolves.toMatchObject({ stdout: '' })
 		await execute(process.execPath, [script, 'module', 'projectManagement', '--stateful', '--tests', '--no-install'], { cwd: root })
 		expect(await readFile(resolve(root, 'src/modules/projectManagement/projectManagement.public.ts'), 'utf8'))
 			.toContain('ProjectManagementEntry')
 		await expect(access(resolve(root, 'src/modules/projectManagement/__tests__/projectManagement.test.tsx'))).resolves.toBeUndefined()
-		const manifest = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8')) as { knip: { ignore: string[] } }
-		expect(manifest.knip.ignore).toContain('src/modules/projectManagement/projectManagement.public.ts')
 		try {
 			await execute(process.execPath, [
 				resolve(repositoryRoot, 'node_modules/typescript/bin/tsc'),
@@ -56,7 +57,8 @@ it('creates complete slices without empty scaffolding', async () => {
 async function prepareTypecheckFixture(root: string) {
 	await mkdir(resolve(root, 'src/shared/http'), { recursive: true })
 	await symlink(resolve(repositoryRoot, 'node_modules'), resolve(root, 'node_modules'), 'dir')
-	await writeFile(resolve(root, 'package.json'), '{"knip":{"ignore":[]}}\n')
+	await writeFile(resolve(root, 'package.json'), '{"knip":{"entry":["src/owner.ts"],"ignore":["src/entities/**","src/shared/**"]}}\n')
+	await writeFile(resolve(root, 'src/owner.ts'), 'export {}\n')
 	await writeFile(resolve(root, 'src/shared/http/httpClient.types.ts'), `
 import { InjectionToken } from '@needle-di/core'
 export interface HttpClient { request: (url: string, init?: RequestInit) => Promise<unknown> }
@@ -88,6 +90,23 @@ declare module '@reatom/react' {
 		},
 		include: ['src'],
 	}, null, '\t')}\n`)
+}
+
+function runKnip(root: string) {
+	return execute(process.execPath, [resolve(repositoryRoot, 'node_modules/knip/bin/knip.js'), '--include', 'files'], { cwd: root })
+}
+
+async function getKnipFailure(root: string) {
+	try {
+		await runKnip(root)
+	}
+	catch (error) {
+		if (error instanceof Error && 'stdout' in error && typeof error.stdout === 'string') {
+			return error.stdout
+		}
+		throw error
+	}
+	throw new Error('Knip unexpectedly passed')
 }
 
 it('rolls back source and manifests when dependency installation fails', async () => {
