@@ -144,6 +144,30 @@ it('rolls back source and manifests when dependency installation fails', async (
 	}
 })
 
+it('installs JST-tested dependency versions instead of floating latest releases', async () => {
+	const root = await mkdtemp(resolve(tmpdir(), 'jst-slice-versions-'))
+	try {
+		await mkdir(resolve(root, 'bin'))
+		await writeFile(resolve(root, 'package.json'), '{"packageManager":"npm@11.6.2"}\n')
+		await writeFile(resolve(root, 'bin/npm'), '#!/bin/sh\nprintf "%s\\n" "$*" >> npm-calls.txt\n')
+		await chmod(resolve(root, 'bin/npm'), 0o755)
+
+		await execute(process.execPath, [script, 'feature', 'reviewQueue', '--stateful', '--tests', '--yes'], {
+			cwd: root,
+			env: { ...process.env, PATH: `${resolve(root, 'bin')}:${process.env.PATH}` },
+		})
+
+		const calls = await readFile(resolve(root, 'npm-calls.txt'), 'utf8')
+		expect(calls).toContain('@reatom/core@1001.3.0')
+		expect(calls).toContain('@reatom/react@1001.0.1')
+		expect(calls).toContain('@testing-library/react@16.3.3')
+		expect(calls).toContain('jsdom@30.1.2')
+	}
+	finally {
+		await rm(root, { force: true, recursive: true })
+	}
+})
+
 it('uses SCSS policy and reports exact dry-run output without writing', async () => {
 	const root = await mkdtemp(resolve(tmpdir(), 'jst-slice-scss-'))
 	try {

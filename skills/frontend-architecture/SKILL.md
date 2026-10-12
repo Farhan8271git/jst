@@ -5,6 +5,14 @@ description: Implement or review product code in this React starter using model-
 
 # Frontend architecture
 
+## Efficient agent loop
+
+1. Read this skill once and inspect only the nearest generated or complete slice needed for the task.
+2. Run `npm run create:slice -- --help`, then generate every new boundary before writing product code.
+3. Treat generated dependency versions, imports, Reatom wiring, DI wiring, filenames, and tests as the JST-supported contract. Do not inspect package, linter, or framework internals and do not replace generated dependency versions.
+4. Implement the ownership map, run focused tests, then `npm run lint:fix` once.
+5. Repair remaining reported source diagnostics and run `npm run check:release` once at delivery. Do not repeat a passing gate or perform speculative final verification.
+
 Inspect the nearest complete slice before editing. Keep the smallest complete vertical slice and preserve the architecture kernel when replacing the reference domain.
 
 For every new entity, feature, module, or widget, run `npm run create:slice -- --help` and generate the boundary before implementing it. Use `--stateful` for a Reatom workflow and the relevant entity flags for repository/service/persistence. Extend the generated store, entry, view, public API, and tests; do not reconstruct their framework or lint conventions from dependency internals.

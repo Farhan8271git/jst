@@ -6,6 +6,16 @@ import { createInterface } from 'node:readline/promises'
 import { pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 
+const dependencySpecs = {
+	'@reatom/core': '@reatom/core@1001.3.0',
+	'@reatom/react': '@reatom/react@1001.0.1',
+	'@testing-library/react': '@testing-library/react@16.3.3',
+	'jsdom': 'jsdom@30.1.2',
+	'msw': 'msw@3.0.3',
+	'sass': 'sass@1.105.1',
+	'zod': 'zod@4.6.7',
+}
+
 const rawArguments = process.argv.slice(2)
 if (rawArguments.includes('--help') || rawArguments.includes('-h')) {
 	process.stdout.write(`Usage: npm run create:slice -- <entity|feature|module|widget> <lowerCamelName> [options]
@@ -77,6 +87,9 @@ try {
 		`Created ${kind} slice at src/${layer}/${name}.`,
 		`Next: compose @/${layer}/${name}/${name}${policy.imports.publicApiSuffix} from an owning page or higher layer.`,
 		'Knip intentionally keeps the quality gate red until the new slice is reachable.',
+		...(plan.dependencies.length || plan.devDependencies.length
+			? ['JST installed tested dependency versions. Extend the generated imports and API; do not replace or inspect package internals.']
+			: []),
 	].join('\n')}\n`)
 }
 
@@ -290,11 +303,15 @@ async function installDependencies(root, plan) {
 		? ['add', '--ignore-workspace-root-check']
 		: ['install']
 	if (plan.dependencies.length) {
-		await run(packageManager, [...install, ...plan.dependencies], root)
+		await run(packageManager, [...install, ...plan.dependencies.map(toDependencySpec)], root)
 	}
 	if (plan.devDependencies.length) {
-		await run(packageManager, [...install, '--save-dev', ...plan.devDependencies], root)
+		await run(packageManager, [...install, '--save-dev', ...plan.devDependencies.map(toDependencySpec)], root)
 	}
+}
+
+function toDependencySpec(name) {
+	return dependencySpecs[name] ?? name
 }
 
 async function snapshotProjectFiles(root) {
