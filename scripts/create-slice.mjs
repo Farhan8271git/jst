@@ -7,6 +7,23 @@ import { pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 
 const rawArguments = process.argv.slice(2)
+if (rawArguments.includes('--help') || rawArguments.includes('-h')) {
+	process.stdout.write(`Usage: npm run create:slice -- <entity|feature|module|widget> <lowerCamelName> [options]
+
+Options:
+  --stateful       add a Reatom store and reactive entry
+  --repository     add an entity repository, DTO, mapper, HTTP adapter, and provider
+  --service        add an entity service
+  --persistence    add an entity persistence port
+  --ui             add Mantine UI
+  --tests          add a colocated test
+  --style <value>  use css or scss modules
+  --no-install     do not install required packages
+  --dry-run        print the file and dependency plan without writing
+  -y, --yes        accept non-interactive defaults
+`)
+	process.exit(0)
+}
 const command = parseArgs({
 	allowNegative: true,
 	allowPositionals: true,
@@ -161,7 +178,7 @@ function createPlan({ kind, name, policy, style, values }) {
 	}
 	if (values.persistence) {
 		assertEntityOption(kind, '--persistence')
-		files.set(`repository/${name}.persister.ts`, `export interface ${typeName}Persister {\n\tclear(): Promise<void>\n}\n`)
+		files.set(`repository/${name}.persister.ts`, `export interface ${typeName}Persister {\n\tclear: () => Promise<void>\n}\n`)
 	}
 	if (values.msw) {
 		assertEntityOption(kind, '--msw')
@@ -217,7 +234,7 @@ function createDto(typeName, name) {
 }
 
 function createRepository(typeName, name) {
-	return `import type { ${typeName} } from '../model/${name}.model'\nimport { InjectionToken } from '@needle-di/core'\n\nexport interface ${typeName}Repository {\n\tfindById(id: string): Promise<${typeName}>\n}\n\nexport const ${name}RepositoryToken = new InjectionToken<${typeName}Repository>('${typeName.toUpperCase()}_REPOSITORY')\n`
+	return `import type { ${typeName} } from '../model/${name}.model'\nimport { InjectionToken } from '@needle-di/core'\n\nexport interface ${typeName}Repository {\n\tfindById: (id: string) => Promise<${typeName}>\n}\n\nexport const ${name}RepositoryToken = new InjectionToken<${typeName}Repository>('${typeName.toUpperCase()}_REPOSITORY')\n`
 }
 
 function createMapper(typeName, name) {
@@ -225,7 +242,7 @@ function createMapper(typeName, name) {
 }
 
 function createFetchAdapter(typeName, name, alias) {
-	return `import type { HttpClient } from '${alias}shared/http/httpClient.types'\nimport type { ${typeName}Repository } from './${name}.repository'\nimport { inject } from '@needle-di/core'\nimport { HTTP_CLIENT_TOKEN } from '${alias}shared/http/httpClient.types'\nimport { map${typeName}Dto } from '../model/${name}.mapper'\nimport { ${name}DtoSchema } from './${name}.dto'\n\nexport class ${typeName}FetchAdapter implements ${typeName}Repository {\n\tconstructor(private readonly httpClient: HttpClient = inject(HTTP_CLIENT_TOKEN)) {}\n\n\tasync findById(id: string) {\n\t\tconst dto = ${name}DtoSchema.parse(await this.httpClient.request(\`/${name}/\${id}\`))\n\t\treturn map${typeName}Dto(dto)\n\t}\n}\n`
+	return `import type { ${typeName}Repository } from './${name}.repository'\nimport type { HttpClient } from '${alias}shared/http/httpClient.types'\nimport { inject } from '@needle-di/core'\nimport { HTTP_CLIENT_TOKEN } from '${alias}shared/http/httpClient.types'\nimport { map${typeName}Dto } from '../model/${name}.mapper'\nimport { ${name}DtoSchema } from './${name}.dto'\n\nexport class ${typeName}FetchAdapter implements ${typeName}Repository {\n\tconstructor(private readonly httpClient: HttpClient = inject(HTTP_CLIENT_TOKEN)) {}\n\n\tasync findById(id: string) {\n\t\tconst dto = ${name}DtoSchema.parse(await this.httpClient.request(\`/${name}/\${id}\`))\n\t\treturn map${typeName}Dto(dto)\n\t}\n}\n`
 }
 
 function createProvider(typeName, name) {
@@ -238,9 +255,10 @@ function createMswHandler(name) {
 
 function createTest(kind, typeName, name, hasRepository, testsUi, uiDirectory) {
 	if (kind === 'entity' && hasRepository) {
-		const uiImports = testsUi ? `import { HeadlessMantineProvider } from '@mantine/core'\nimport { render, screen } from '@testing-library/react'\nimport { ${typeName} } from '../${uiDirectory}/${name}.component'\n` : ''
+		const uiImports = testsUi ? `import { HeadlessMantineProvider } from '@mantine/core'\nimport { render, screen } from '@testing-library/react'\n` : ''
+		const uiComponentImport = testsUi ? `import { ${typeName} } from '../${uiDirectory}/${name}.component'\n` : ''
 		const uiTest = testsUi ? `\n\tit('renders the props-driven entity view', () => {\n\t\trender(<HeadlessMantineProvider env="test"><${typeName} /></HeadlessMantineProvider>)\n\t\texpect(screen.getByRole('region', { name: '${name}' })).toBeTruthy()\n\t})\n` : ''
-		return `${testsUi ? '// @vitest-environment jsdom\n\n' : ''}${uiImports}import { describe, expect, it } from 'vitest'\nimport { map${typeName}Dto } from '../model/${name}.mapper'\nimport { ${name}DtoSchema } from '../repository/${name}.dto'\n\ndescribe('${name} boundary', () => {\n\tit('validates and maps an external DTO', () => {\n\t\tconst dto = ${name}DtoSchema.parse({ id: 'example' })\n\t\texpect(map${typeName}Dto(dto)).toEqual({ id: 'example' })\n\t})\n\n\tit('rejects an invalid external DTO', () => {\n\t\texpect(() => ${name}DtoSchema.parse({ id: 1 })).toThrow()\n\t})\n${uiTest}})\n`
+		return `${testsUi ? '// @vitest-environment jsdom\n\n' : ''}${uiImports}import { describe, expect, it } from 'vitest'\n${uiComponentImport}import { map${typeName}Dto } from '../model/${name}.mapper'\nimport { ${name}DtoSchema } from '../repository/${name}.dto'\n\ndescribe('${name} boundary', () => {\n\tit('validates and maps an external DTO', () => {\n\t\tconst dto = ${name}DtoSchema.parse({ id: 'example' })\n\t\texpect(map${typeName}Dto(dto)).toEqual({ id: 'example' })\n\t})\n\n\tit('rejects an invalid external DTO', () => {\n\t\texpect(() => ${name}DtoSchema.parse({ id: 1 })).toThrow()\n\t})\n${uiTest}})\n`
 	}
 	if (kind === 'entity') {
 		return `import { describe, expect, it } from 'vitest'\nimport { create${typeName} } from '../model/${name}.model'\n\ndescribe('${name} model', () => {\n\tit('creates an independent domain value', () => {\n\t\tconst source = { id: 'example' }\n\t\tconst model = create${typeName}(source)\n\t\texpect(model).toEqual(source)\n\t\texpect(model).not.toBe(source)\n\t})\n})\n`

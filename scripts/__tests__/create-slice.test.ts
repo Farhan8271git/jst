@@ -10,15 +10,28 @@ const execute = promisify(execFile)
 const script = resolve(import.meta.dirname, '../create-slice.mjs')
 const repositoryRoot = resolve(import.meta.dirname, '../..')
 
+it('prints discoverable command help', async () => {
+	const { stdout } = await execute(process.execPath, [script, '--help'])
+
+	expect(stdout).toContain('Usage: npm run create:slice')
+	expect(stdout).toContain('--stateful')
+	expect(stdout).toContain('--repository')
+	expect(stdout).toContain('--no-install')
+})
+
 it('creates complete slices without empty scaffolding', async () => {
 	const root = await mkdtemp(resolve(tmpdir(), 'jst-slice-'))
 	try {
-		await execute(process.execPath, [script, '--', 'entity', 'accountSettings', '--ui', '--repository', '--tests', '--no-install'], { cwd: root })
+		await execute(process.execPath, [script, '--', 'entity', 'accountSettings', '--ui', '--repository', '--persistence', '--tests', '--no-install'], { cwd: root })
 		await expect(access(resolve(root, 'src/entities/accountSettings/model/accountSettings.model.ts'))).resolves.toBeUndefined()
 		await expect(access(resolve(root, 'src/entities/accountSettings/repository/accountSettings.dto.ts'))).resolves.toBeUndefined()
 		await expect(access(resolve(root, 'src/entities/accountSettings/ui/accountSettings.component.module.css'))).resolves.toBeUndefined()
 		await expect(access(resolve(root, 'src/entities/accountSettings/__tests__/accountSettings.test.tsx'))).resolves.toBeUndefined()
 		await expect(access(resolve(root, 'src/entities/accountSettings/model/.gitkeep'))).rejects.toThrow()
+		expect(await readFile(resolve(root, 'src/entities/accountSettings/repository/accountSettings.repository.ts'), 'utf8'))
+			.toContain('findById: (id: string) => Promise<AccountSettings>')
+		expect(await readFile(resolve(root, 'src/entities/accountSettings/repository/accountSettings.persister.ts'), 'utf8'))
+			.toContain('clear: () => Promise<void>')
 		await prepareTypecheckFixture(root)
 		const { stdout } = await execute(process.execPath, [script, 'feature', 'readingList', '--stateful', '--no-install'], { cwd: root })
 		expect(stdout).toContain('compose @/features/readingList/readingList.public')

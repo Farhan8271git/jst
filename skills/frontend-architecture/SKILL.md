@@ -7,6 +7,8 @@ description: Implement or review product code in this React starter using model-
 
 Inspect the nearest complete slice before editing. Keep the smallest complete vertical slice and preserve the architecture kernel when replacing the reference domain.
 
+For every new entity, feature, module, or widget, run `npm run create:slice -- --help` and generate the boundary before implementing it. Use `--stateful` for a Reatom workflow and the relevant entity flags for repository/service/persistence. Extend the generated store, entry, view, public API, and tests; do not reconstruct their framework or lint conventions from dependency internals.
+
 ## Model first
 
 Before JSX, identify the bounded context, domain state, invariants, use cases, and effectful boundaries. Then implement only the layers the use case needs:
@@ -78,6 +80,8 @@ Removing the demo means deleting demo slices, not `src/app/container`, `src/shar
 ## Delivery check
 
 Keep transport failure and empty/loading states explicit. Test services/stores with substituted ports and user flows with role-based Playwright locators. Test names must describe behavior actually exercised; cover the risky transitions named in the request, not only the happy path. Tests obey the same public APIs and slice boundaries as production code—own a double locally or expose an intentional testing contract instead of importing another slice's private `__tests__` files. Run `npm run check`; it verifies layer rules, UI isolation, and the architecture kernel. Add abstractions only when the current slice proves they are needed.
+
+Use `npm run lint:fix` once for mechanical import, formatting, and stylesheet repairs before investigating remaining diagnostics. Read the reported source and public rule documentation; do not inspect linter or framework package internals for ordinary repair. Split files/functions for remaining size or complexity findings instead of weakening configuration.
 
 Treat every asynchronous state transition as potentially overlapping. Reads must ignore or cancel stale outcomes when order matters. Mutations must serialize, merge, or use operation identities so a late success or failure cannot overwrite newer state. For optimistic workflows, test two overlapping mutations and an out-of-order rejection in addition to ordinary success and rollback.
 

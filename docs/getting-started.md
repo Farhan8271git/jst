@@ -22,6 +22,8 @@ npm run create:slice -- entity order
 npm run create:slice -- feature browseOrders --stateful
 ```
 
+Run `npm run create:slice -- --help` for repository, service, persistence, UI, test, style, and non-interactive options. Extend the generated contracts and Reatom wiring instead of rebuilding their conventions from package internals.
+
 The entity owns order vocabulary and external data. The feature owns the browsing workflow and interaction state. The page composes both. Do not start with JSX and invent ownership afterward.
 
 ## 3. Implement the data path
@@ -81,6 +83,14 @@ Use [Troubleshooting](troubleshooting.md) for import, naming, effect, UI, SSR, a
 Tests use the same public APIs as production code. Do not deep-import another slice's private test utilities.
 
 ## 7. Run the release gate
+
+First apply safe mechanical fixes:
+
+```bash
+npm run lint:fix
+```
+
+Then repair only the remaining responsibility, size, complexity, type, and behavior findings before running the full gate:
 
 ```bash
 npm run check:release
