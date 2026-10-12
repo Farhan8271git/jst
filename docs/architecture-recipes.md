@@ -55,7 +55,9 @@ The state library is an implementation detail. Cache keys, invalidation, optimis
 - Domain events are immutable completed facts.
 - Undo stores the minimum inverse command or event data required to restore an invariant.
 
-Test success, duplicate submission, rollback, late failure, retry, and undo after navigation when the product promises it.
+Choose and document a concurrency policy: serialize commands, merge confirmed state, or correlate each outcome with an operation identity. A late response must never restore an obsolete snapshot or discard another successful mutation.
+
+Test success, duplicate submission, overlapping mutations, out-of-order failure, rollback, retry, and undo after navigation when the product promises it.
 
 ## Cross-domain workflows
 

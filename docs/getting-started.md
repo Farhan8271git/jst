@@ -75,6 +75,7 @@ Use [Troubleshooting](troubleshooting.md) for import, naming, effect, UI, SSR, a
 - Unit-test DTO rejection and mapping.
 - Substitute the repository port in the service test.
 - Exercise loading, failure, empty, refresh, and stale-response behavior in the store test.
+- For mutations, test overlapping operations and an out-of-order failure; a late outcome must not overwrite newer state.
 - Cover the user-visible flow with role-based Playwright locators.
 
 Tests use the same public APIs as production code. Do not deep-import another slice's private test utilities.
