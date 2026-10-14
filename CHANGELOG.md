@@ -2,6 +2,10 @@
 
 Notable changes to the JST application template are documented here.
 
+## 0.4.26
+
+- Use the pinned npm release in every cross-platform architecture proof job.
+
 ## 0.4.25
 
 - Add the reproducible architecture repair proof and structured diagnostics.
