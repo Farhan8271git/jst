@@ -16,6 +16,7 @@ JST is a React application foundation whose architecture is enforced in the edit
 
 - [Build the first production feature](getting-started.md)
 - [Architecture](architecture.md)
+- [Architecture repair proof](architecture-proof.md)
 - [Architecture recipes](architecture-recipes.md)
 
 ## Guides

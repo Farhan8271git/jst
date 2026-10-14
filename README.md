@@ -34,6 +34,14 @@ Its completion screen shows the first slice, fast validation, and full release c
 
 JST requires Node.js 24 LTS and supports npm and pnpm. Released CLI, template, and architecture-plugin combinations are recorded in [`jst.compatibility.json`](jst.compatibility.json); project migrations use the same manifest instead of guessing from dependency versions.
 
+Reproduce JST's central architecture claim locally:
+
+```bash
+npm run proof:architecture
+```
+
+The [five-minute proof](docs/architecture-proof.md) generates clean slices, introduces two real violations, verifies actionable failures, repairs them, and returns to green.
+
 ## Showcase
 
 The full architecture walkthrough and working API/persistence flows live in the independent [JST Showcase](https://github.com/jst-stack/jst-showcase), pinned here as the `showcase` Git submodule. Generated applications do not include it.
@@ -81,6 +89,7 @@ New to JST? Build the [first production feature](docs/getting-started.md), then 
 | `npm run create:slice -- module projectManagement --stateful` | Create a bounded-context mini-application |
 | `npm run create:package -- orderOperations` | Extract a reviewed workspace boundary with an ADR |
 | `npm run jst:mcp` | Start the project-local JST MCP server for coding agents |
+| `npm run proof:architecture` | Reproduce the architecture violation and repair loop |
 | `npm run template:setup` | Configure the new product |
 
 ## Project policy

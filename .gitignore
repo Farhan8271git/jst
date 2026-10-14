@@ -18,6 +18,8 @@ lerna-debug.log*
 # Generated and compiled output
 .react-router/
 build/
+artifacts/
+.jst-proof-*/
 coverage/
 playwright-report/
 test-results/

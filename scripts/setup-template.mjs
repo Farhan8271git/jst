@@ -300,6 +300,7 @@ Use \`--stateful\` when the workflow needs a Reatom view model. Use \`entity\` f
 - \`npm run validate\` is the fast local gate: lint, architecture, types, and unit tests.
 - \`npm run check\` adds React Doctor, a production build, budgets, and unused-code checks.
 - \`npm run check:release\` is the complete release gate and includes browser, SSR, hydration, and accessibility contracts.
+- \`npm run proof:architecture\` reproduces the generated-slice violation and repair loop in a temporary project.
 
 ## Architecture
 

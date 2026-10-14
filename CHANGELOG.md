@@ -2,6 +2,10 @@
 
 Notable changes to the JST application template are documented here.
 
+## 0.4.25
+
+- Add the reproducible architecture repair proof and structured diagnostics.
+
 ## 0.4.18
 
 - Keep ecosystem-only release automation and documentation out of generated applications while preserving the complete architecture kernel.
