@@ -15,6 +15,8 @@ npm run validate
 
 `validate` is the fast edit loop. `check:release` adds the production build, dependency audit, SSR, hydration, accessibility, and browser contracts.
 
+If your coding agent supports MCP, configure a stdio server with `npm run jst:mcp` (`pnpm run jst:mcp` in a pnpm project). Start each implementation with `jst_start_task`. A local style or documentation edit receives a small task-specific contract; generator capabilities and full boundary guidance are returned only when the task introduces a new entity, feature, module, or widget.
+
 ## 2. Generate the boundaries
 
 ```bash

@@ -58,6 +58,8 @@ Dependencies point toward stable policy. Pages compose the application, features
 
 Read [Architecture](docs/architecture.md) before adding a non-trivial vertical slice. Coding agents should follow [the repository architecture skill](skills/frontend-architecture/SKILL.md).
 
+Generated projects include `@jst-stack/mcp`. Connect your coding agent to `npm run jst:mcp`; it returns task-sized architecture context, runs the project generator, and exposes bounded quality gates without copying project policy into the server.
+
 New to JST? Build the [first production feature](docs/getting-started.md), then read [why and when to use JST](docs/why-jst.md).
 
 ## Commands
@@ -78,6 +80,7 @@ New to JST? Build the [first production feature](docs/getting-started.md), then 
 | `npm run create:slice -- feature checkout --stateful` | Create a reactive feature with Reatom wiring |
 | `npm run create:slice -- module projectManagement --stateful` | Create a bounded-context mini-application |
 | `npm run create:package -- orderOperations` | Extract a reviewed workspace boundary with an ADR |
+| `npm run jst:mcp` | Start the project-local JST MCP server for coding agents |
 | `npm run template:setup` | Configure the new product |
 
 ## Project policy

@@ -162,6 +162,7 @@ it('installs JST-tested dependency versions instead of floating latest releases'
 		expect(calls).toContain('@reatom/react@1001.0.1')
 		expect(calls).toContain('@testing-library/react@16.3.3')
 		expect(calls).toContain('jsdom@30.1.2')
+		expect(calls).toContain('install --ignore-scripts')
 	}
 	finally {
 		await rm(root, { force: true, recursive: true })

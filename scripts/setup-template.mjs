@@ -308,6 +308,10 @@ Routes are discovered from \`src/pages\`. Read \`docs/architecture.md\` before a
 Generate additional slices with \`npm run create:slice -- <entity|feature|module|widget> <lowerCamelName>\`. Extract a proven boundary with \`npm run create:package -- <lowerCamelName>\` only when reuse, ownership, build, or release pressure is real.
 
 Coding agents should also follow \`skills/frontend-architecture/SKILL.md\`.
+
+## Coding agents
+
+The project includes a local JST MCP server. Configure your agent to run \`npm run jst:mcp\` (or \`pnpm run jst:mcp\`) and call \`jst_start_task\` before implementation. It returns only the architecture context needed for the requested task; new boundaries can then use \`jst_scaffold_slice\`, and project gates use \`jst_check\`.
 `,
 	)
 }

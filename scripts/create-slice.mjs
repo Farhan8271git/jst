@@ -308,6 +308,9 @@ async function installDependencies(root, plan) {
 	if (plan.devDependencies.length) {
 		await run(packageManager, [...install, '--save-dev', ...plan.devDependencies.map(toDependencySpec)], root)
 	}
+	if (packageManager === 'npm' && plan.dependencies.length && plan.devDependencies.length) {
+		await run(packageManager, ['install', '--ignore-scripts'], root)
+	}
 }
 
 function toDependencySpec(name) {

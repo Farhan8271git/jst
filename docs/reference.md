@@ -14,6 +14,9 @@ For contribution requirements, see the project's
 | `npm run typecheck` | Generate route types and check TypeScript. |
 | `npm run build` | Build the production application after type checking. |
 | `npm start` | Serve the production build. |
+| `npm run jst:mcp` | Start the project-local JST MCP server. |
+
+The server exposes `jst_start_task`, `jst_scaffold_slice`, `jst_get_recipe`, and `jst_check`. See [`@jst-stack/mcp`](https://github.com/jst-stack/jst-mcp#readme) for client configuration and the optional Pi adapter.
 
 ## Generators
 

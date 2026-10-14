@@ -96,3 +96,64 @@ Treat every asynchronous state transition as potentially overlapping. Reads must
 Run Reatom behavior probes through Vitest, not standalone `node` scripts: its scheduler can keep the Node event loop active after a probe prints its result.
 
 Create slices with `npm run create:slice -- <entity|feature|module|widget> <lowerCamelName>`. Extract a proven boundary with `npm run create:package -- <lowerCamelName>`; the generated package must keep one public export, declared dependencies, an acyclic workspace graph, and a reviewed extraction ADR. Source files follow `<lowerCamelName>.<role>.ts(x)` and the role directories enforced by ESLint. Do not disable architecture, naming, effect-boundary, complexity, or size rules inline; split the responsibility or move it to the reported boundary.
+
+## Recipes
+
+### http-entity
+
+Run `npm run create:slice -- entity <name> --repository --tests`. Validate the DTO at the adapter, map it to the domain model, keep the repository port beside its consumer, bind the adapter in its provider, and expose only the public API.
+
+### persistence-entity
+
+Run `npm run create:slice -- entity <name> --persistence --tests`. Keep storage behind a narrow consumer-owned port, validate persisted input, implement the effect in an adapter, and bind it at the composition root; UI never sees storage.
+
+Keep the storage port beside the repository port in `<name>.repository.ts` and bind both tokens in `<name>.provider.ts`; do not invent `.storage` or `.di` file roles. Test the adapter through an injected storage double instead of touching global `localStorage` in tests.
+
+### stateful-feature
+
+Run `npm run create:slice -- feature <name> --stateful --tests`. Put interaction lifecycle in the Reatom store, observe it in the entry, and render only props in the view. Treat every async transition as overlapping.
+
+This template pins Reatom v1001: read atoms with `state()`, update with `state.set(...)`, derive with `computed(() => state())`, define actions without a `ctx` argument, and preserve async context with `await wrap(effect())`. Do not use legacy `createCtx`, `ctx.get`, or `ctx.spy`; tests read atoms directly.
+
+### route-composition
+
+Keep `route.tsx` metadata-only and compose slice public APIs in the page. Resolve DI there, pass narrow dependencies downward, and never import across sibling slices or expose the container to views.
+
+### optimistic-mutation
+
+Keep pending state, projection, rollback, and messages in the store. Serialize, merge, or correlate mutations so late results cannot overwrite newer state. Test success, rollback, two overlaps, and an out-of-order rejection.
+
+The test must assert both projected state and the persisted/repository state after operations settle. For optimistic membership changes, prefer narrow `add(id)`/`remove(id)` effects. If the port can only save a full snapshot, serialize writes and compute the snapshot when the queued effect starts; never let an older snapshot finish after and overwrite a newer one.
+
+When testing a rejected deferred operation, attach `expect(promise).rejects` before triggering the rejection so Vitest never observes an unhandled promise.
+
+Use Reatom effects through `wrap`; never probe the package with standalone Node. For an optimistic add, correlate rollback per item so one failure cannot erase another concurrent success:
+
+```text
+private operation = 0
+items = atom<Item[]>([])
+pending = atom<Record<Item['id'], number>>({})
+
+add = action(async (item: Item) => {
+	if (this.items().some(current => current.id === item.id)) return
+	const operation = ++this.operation
+	this.items.set([...this.items(), item])
+	this.pending.set({ ...this.pending(), [item.id]: operation })
+	try {
+		await wrap(this.repository.add(item))
+	}
+	catch (error) {
+		if (this.pending()[item.id] === operation) {
+			this.items.set(this.items().filter(current => current.id !== item.id))
+		}
+		throw error
+	}
+	finally {
+		if (this.pending()[item.id] === operation) {
+			const pending = { ...this.pending() }
+			delete pending[item.id]
+			this.pending.set(pending)
+		}
+	}
+})
+```
