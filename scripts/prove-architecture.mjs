@@ -64,7 +64,11 @@ async function lint(label, expectSuccess) {
 	if (!expectSuccess && result.code === 0) {
 		throw new Error(`${label} unexpectedly passed.`)
 	}
-	return JSON.parse(result.stdout).flatMap(file => file.messages)
+	const report = JSON.parse(result.stdout)
+	if (!Array.isArray(report) || report.some(file => !Array.isArray(file?.messages))) {
+		throw new Error(`${label} returned an invalid ESLint JSON report.`)
+	}
+	return report.flatMap(file => file.messages)
 }
 
 function assertRules(diagnostics, expected) {
